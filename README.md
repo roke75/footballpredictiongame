@@ -1,5 +1,5 @@
 # EURO 2024 Prediction Game
-This a little fun project for predicting EURO 2024 matches. It utilizes a serverless architecture hosted on AWS, leveraging services like Lambda, DynamoDB, and S3.
+This a little fun project for predicting EURO 2024 matches. It utilizes a serverless architecture hosted on AWS, leveraging services like Lambda, DynamoDB, and S3. Entire code is made by AI.
 
 ## Getting Started
 1. Clone the Repository: Download the project files from the repository.
