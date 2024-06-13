@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 
 interface Match {
     match_id: number;
@@ -14,7 +14,9 @@ const PredictionForm: React.FC = () => {
     const [matchId, setMatchId] = useState('');
     const [homeScore, setHomeScore] = useState('');
     const [awayScore, setAwayScore] = useState('');
+    const [alert, setAlert] = useState({ show: false, message: '' });
     const users = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+
 
     const submitPrediction = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -27,8 +29,14 @@ const PredictionForm: React.FC = () => {
                 home_score: parseInt(homeScore),
                 away_score: parseInt(awayScore),
             });
+            setAlert({ show: true, message: response.data });
+            setMatchId('');
+            setUserId('');
+            setHomeScore('');
+            setAwayScore('');
             console.log(response.data);
         } catch (error) {
+            setAlert({ show: true, message: 'Error submitting prediction' });
             console.error(error);
         }
     };
@@ -54,6 +62,11 @@ const PredictionForm: React.FC = () => {
             <Row className="mt-4 mb-4">
                 <Col>
                     <h1>Submit Your Prediction</h1>
+                    {alert.show && (
+                        <Alert variant="info" onClose={() => setAlert({ show: false, message: '' })} dismissible>
+                            {alert.message}
+                        </Alert>
+                    )}
                 </Col>
             </Row>
             <Form onSubmit={submitPrediction}>
