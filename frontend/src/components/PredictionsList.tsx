@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Table, Card } from 'react-bootstrap';
+import { Container, Table, Card, Button } from 'react-bootstrap';
+import moment from 'moment';
 
 interface Match {
     match_id: number;
@@ -22,6 +23,7 @@ interface Prediction {
 
 const PredictionsList: React.FC = () => {
     const [matches, setMatches] = useState<Match[]>([]);
+    const [expandedMatches, setExpandedMatches] = useState<number[]>([]);
 
     useEffect(() => {
         const fetchPredictions = async () => {
@@ -37,6 +39,18 @@ const PredictionsList: React.FC = () => {
 
         fetchPredictions();
     }, []);
+
+    const toggleExpand = (matchId: number) => {
+        setExpandedMatches(prevState =>
+            prevState.includes(matchId)
+                ? prevState.filter(id => id !== matchId)
+                : [...prevState, matchId]
+        );
+    };
+
+    const isPastMatch = (matchDate: string) => {
+        return moment(matchDate,'DD.MM.YYYY HH:mm').isBefore(moment(),'day');
+    };
 
     return (
         <Container>
@@ -56,7 +70,7 @@ const PredictionsList: React.FC = () => {
                             {matches.map((match) => (
                                 <tr key={match.match_id}>
                                     <td>{match.home_team} - {match.away_team}</td>
-                                    <td>{match.match_date}</td>
+                                    <td>{moment(match.match_date).format('DD.MM.YYYY HH:mm')}</td>
                                     <td>
                                         {match.home_score !== undefined && match.away_score !== undefined ? (
                                             `${match.home_score} - ${match.away_score}`
@@ -83,37 +97,60 @@ const PredictionsList: React.FC = () => {
                     </Table>
 
                     <div className="d-block d-md-none">
-                        {matches.map((match) => (
-                            <Card key={match.match_id} className="mb-3">
-                                <Card.Body>
-                                    <Card.Title>{match.home_team} - {match.away_team}</Card.Title>
-                                    <Card.Subtitle className="mb-2 text-muted">{match.match_date}</Card.Subtitle>
-                                    <Card.Text>
-                                        <strong>Result:</strong> {match.home_score !== undefined && match.away_score !== undefined ? `${match.home_score} - ${match.away_score}` : 'N/A'}
-                                    </Card.Text>
-                                    <Card.Text>
-                                        <strong>Predictions:</strong>
-                                        {match.predictions?.length ? (
-                                            <ul>
-                                                {match.predictions.map((prediction, index) => (
-                                                    <li key={index}>
-                                                        {prediction.user_id}: {prediction.home_score} - {prediction.away_score} (Points: {prediction.points})
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            'No predictions'
+                        {matches.map((match) => {
+                            const isExpanded = expandedMatches.includes(match.match_id);
+                            const matchDate = moment(match.match_date,'DD.MM.YYYY HH:mm');
+                            const pastMatch = isPastMatch(match.match_date);
+
+                            return (
+                                <Card key={match.match_id} className="mb-3">
+                                    <Card.Body>
+                                        <Card.Title>{match.home_team} - {match.away_team}</Card.Title>
+                                        <Card.Subtitle className="mb-2 text-muted">{matchDate.format('DD.MM.YYYY HH:mm')}</Card.Subtitle>
+                                        {pastMatch && match.home_score !== undefined && match.away_score !== undefined ? (
+                                            <Card.Text>
+                                                <strong>Result:</strong> {match.home_score} - {match.away_score}
+                                            </Card.Text>
+                                        ):('N/A')}
+                                        {pastMatch && !isExpanded && (
+                                            <Button variant="link" onClick={() => toggleExpand(match.match_id)}>
+                                                Show More
+                                            </Button>
                                         )}
-                                    </Card.Text>
-                                </Card.Body>
-                            </Card>
-                        ))}
+                                        {(isExpanded || !pastMatch) && (
+                                            <>
+                                                <Card.Text>
+                                                    <strong>Predictions:</strong>
+                                                    {match.predictions?.length ? (
+                                                        <ul>
+                                                            {match.predictions.map((prediction, index) => (
+                                                                <li key={index}>
+                                                                    {prediction.user_id}: {prediction.home_score} - {prediction.away_score} (Points: {prediction.points})
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        'No predictions'
+                                                    )}
+                                                </Card.Text>
+                                                {pastMatch && (
+                                                    <Button variant="link" onClick={() => toggleExpand(match.match_id)}>
+                                                        Show Less
+                                                    </Button>
+                                                )}
+                                            </>
+                                        )}
+                                    </Card.Body>
+                                </Card>
+                            );
+                        })}
                     </div>
                 </>
             ) : (
                 <p>No predictions found.</p>
             )}
-        </Container>);
+        </Container>
+    );
 };
 
 export default PredictionsList;

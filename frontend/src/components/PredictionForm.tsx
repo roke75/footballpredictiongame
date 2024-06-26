@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
+import moment from 'moment';
 
 interface Match {
     match_id: number;
@@ -16,7 +17,22 @@ const PredictionForm: React.FC = () => {
     const [awayScore, setAwayScore] = useState('');
     const [alert, setAlert] = useState({ show: false, message: '' });
     const users = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+    const [matches, setMatches] = useState<Match[]>([]);
 
+    useEffect(() => {
+        const fetchMatches = async () => {
+            try {
+                const response = await axios.post(`${process.env.REACT_APP_API_URL}`, {
+                    action: 'get_matches',
+                });
+                setMatches(response.data);
+            } catch (error) {
+                console.error('Error fetching matches:', error);
+            }
+        };
+
+        fetchMatches();
+    }, []);
 
     const submitPrediction = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -41,22 +57,8 @@ const PredictionForm: React.FC = () => {
         }
     };
 
-    const [matches, setMatches] = useState<Match[]>([]);
+    const upcomingMatches = matches.filter(match => !moment(match.match_date, 'DD.MM.YYYY HH:mm').isBefore(moment(),'day'));
 
-    useEffect(() => {
-        const fetchMatches = async () => {
-            try {
-                const response = await axios.post(`${process.env.REACT_APP_API_URL}`, {
-                    action: 'get_matches',
-                });
-                setMatches(response.data);
-            } catch (error) {
-                console.error('Error fetching matches:', error);
-            }
-        };
-
-        fetchMatches();
-    }, []);
     return (
         <Container>
             <Row className="mt-4 mb-4">
@@ -103,9 +105,9 @@ const PredictionForm: React.FC = () => {
                                 required
                             >
                                 <option value="">Select a Match</option>
-                                {matches.map((match) => (
+                                {upcomingMatches.map((match) => (
                                     <option key={match.match_id} value={match.match_id}>
-                                        {match.home_team} - {match.away_team}
+                                        {match.home_team} - {match.away_team} ({moment(match.match_date, 'DD.MM.YYYY HH:mm').format('DD.MM.YYYY HH:mm')})
                                     </option>
                                 ))}
                             </Form.Control>
