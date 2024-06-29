@@ -107,7 +107,7 @@ const PredictionsList: React.FC = () => {
                                     <Card.Body>
                                         <Card.Title>{match.home_team} - {match.away_team}</Card.Title>
                                         <Card.Subtitle className="mb-2 text-muted">{matchDate.format('DD.MM.YYYY HH:mm')}</Card.Subtitle>
-                                        {pastMatch && match.home_score !== undefined && match.away_score !== undefined ? (
+                                        {match.home_score !== undefined && match.away_score !== undefined ? (
                                             <Card.Text>
                                                 <strong>Result:</strong> {match.home_score} - {match.away_score}
                                             </Card.Text>
