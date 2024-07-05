@@ -70,7 +70,7 @@ const PredictionsList: React.FC = () => {
                             {matches.map((match) => (
                                 <tr key={match.match_id}>
                                     <td>{match.home_team} - {match.away_team}</td>
-                                    <td>{moment(match.match_date).format('DD.MM.YYYY HH:mm')}</td>
+                                    <td>{moment(match.match_date, 'DD.MM.YYYY HH:mm').format('DD.MM.YYYY HH:mm')}</td>
                                     <td>
                                         {match.home_score !== undefined && match.away_score !== undefined ? (
                                             `${match.home_score} - ${match.away_score}`
